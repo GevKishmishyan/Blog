@@ -6,9 +6,15 @@ import models.Category;
 import models.Post;
 import models.User;
 
-public interface PostStorage {
+import java.util.Collection;
+
+public interface Storage {
 
     void add(Post post) throws ModelExistingException, ModelNotFoundException;
+
+    void add(User user) throws ModelExistingException;
+
+    User getUserByEmailAndPassword(String email, String password) throws ModelNotFoundException;
 
     void searchPostsByKeyword(String keyword) throws ModelNotFoundException;
 
@@ -20,6 +26,8 @@ public interface PostStorage {
 
     void printPostsByCategory(Category category) throws ModelNotFoundException;
 
-    boolean isEmpty();
+    boolean isUsersEmpty();
+
+    boolean isPostsEmpty();
 
 }

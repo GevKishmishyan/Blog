@@ -4,8 +4,7 @@ import models.Category;
 import models.Gender;
 import models.Post;
 import models.User;
-import storages.Impl.PostStorageImpl;
-import storages.Impl.UserStorageImpl;
+import storages.Impl.StorageImpl;
 
 import java.util.Date;
 import java.util.Scanner;
@@ -13,8 +12,7 @@ import java.util.Scanner;
 public class BlogMain implements Command {
 
     private static final Scanner SCANNER = new Scanner(System.in);
-    private static final PostStorageImpl POST_STORAGE = new PostStorageImpl();
-    private static final UserStorageImpl USER_STORAGE = new UserStorageImpl();
+    private static final StorageImpl STORAGE = new StorageImpl();
     private static User currentUser = null;
 
     public static void main(String[] args) {
@@ -39,12 +37,11 @@ public class BlogMain implements Command {
                     searchPostByCategory();
                     break;
                 case ALL_POSTS:
-                    // everything is ok
-                    if (POST_STORAGE.isEmpty()) {
+                    if (STORAGE.isPostsEmpty()) {
                         System.out.println("Posts list is EMPTY. Please add post first.");
                         break;
                     }
-                    POST_STORAGE.printAllPosts();
+                    STORAGE.printAllPosts();
                     break;
                 case LOGIN:
                     userLogin();
@@ -79,11 +76,11 @@ public class BlogMain implements Command {
                     searchPostByCategory();
                     break;
                 case ALL_POSTS:
-                    if (POST_STORAGE.isEmpty()) {
+                    if (STORAGE.isPostsEmpty()) {
                         System.out.println("Posts list is EMPTY. Please add post first.");
                         break;
                     }
-                    POST_STORAGE.printAllPosts();
+                    STORAGE.printAllPosts();
                     break;
                 case DELETE_POST:
                     deletePost();
@@ -99,11 +96,11 @@ public class BlogMain implements Command {
     }
 
     private static void deletePost() {
-        if (POST_STORAGE.isEmpty()) {
+        if (STORAGE.isPostsEmpty()) {
             System.out.println("Posts list is EMPTY. Please add post first.");
             return;
         }
-        POST_STORAGE.printPostsByUser(currentUser);
+        STORAGE.printPostsByUser(currentUser);
         System.out.println("Please, input title to DELETING the post.");
         String title = SCANNER.nextLine();
         if(title.equals("")){
@@ -111,7 +108,7 @@ public class BlogMain implements Command {
             deletePost();
         } else {
             try {
-                POST_STORAGE.deletePost(title, currentUser);
+                STORAGE.deletePost(title, currentUser);
                 System.out.println(String.format("Post with %s title was deleted.", title));
             } catch (ModelNotFoundException e) {
                 System.out.println(e.getMessage());
@@ -151,7 +148,7 @@ public class BlogMain implements Command {
             } else {
                 Gender gender = Gender.valueOf(userData[4].toUpperCase());
                 User user = new User(userData[0], userData[1], userData[2], userData[3], gender);
-                USER_STORAGE.add(user);
+                STORAGE.add(user);
                 System.out.println("You are successfully registered.");
             }
         } catch (ModelExistingException e) {
@@ -162,7 +159,7 @@ public class BlogMain implements Command {
     }
 
     private static void userLogin() {
-        if (USER_STORAGE.isEmpty()) {
+        if (STORAGE.isUsersEmpty()) {
             System.out.println("Users list is EMPTY. Please REGISTER first.");
             return;
         }
@@ -180,7 +177,7 @@ public class BlogMain implements Command {
                 System.out.println("Incorrect values!!! Please, try again.");
                 userLogin();
             } else {
-                currentUser = USER_STORAGE.getUserByEmailAndPassword(userData[0], userData[1]);
+                currentUser = STORAGE.getUserByEmailAndPassword(userData[0], userData[1]);
                 System.out.println(String.format("Welcome %s %s. You are successfully logged in.", currentUser.getName(), currentUser.getSurname()));
                 System.out.println("------------------------------------------------------------------------------------");
                 System.out.println("Choose your command.");
@@ -192,7 +189,7 @@ public class BlogMain implements Command {
     }
 
     private static void searchPostByCategory() {
-        if (POST_STORAGE.isEmpty()) {
+        if (STORAGE.isPostsEmpty()) {
             System.out.println("Posts list is EMPTY. Please add post first.");
             return;
         }
@@ -206,7 +203,7 @@ public class BlogMain implements Command {
                 System.out.println("You have to enter only one category (ART, TECHNOLOGY, MEDICINE, POLITICS).");
                 searchPostByCategory();
             } else {
-                POST_STORAGE.printPostsByCategory(Category.valueOf(category.toUpperCase()));
+                STORAGE.printPostsByCategory(Category.valueOf(category.toUpperCase()));
             }
         } catch (ModelNotFoundException e) {
             System.out.println(e.getMessage());
@@ -217,9 +214,7 @@ public class BlogMain implements Command {
     }
 
     private static void searchPostByKeyword() {
-        //ստեղ ստորակետով գրելու պահը չեմ ստուգել, որովհետև հաշվել եմ որ կարող է post-ի title-ի մեջ ստորակետ էղնի
-
-        if (POST_STORAGE.isEmpty()) {
+        if (STORAGE.isPostsEmpty()) {
             System.out.println("Posts list is EMPTY. Please add post first.");
             return;
         }
@@ -230,7 +225,7 @@ public class BlogMain implements Command {
                 System.out.println("You forgot to enter searched keyword.");
                 searchPostByKeyword();
             } else {
-                POST_STORAGE.searchPostsByKeyword(keyword);
+                STORAGE.searchPostsByKeyword(keyword);
             }
         } catch (ModelNotFoundException e) {
             System.out.println(e.getMessage());
@@ -262,7 +257,7 @@ public class BlogMain implements Command {
                 Date date = new Date();
                 Category category = Category.valueOf(postData[2].toUpperCase());
                 Post post = new Post(postData[0], postData[1], category, date, currentUser);
-                POST_STORAGE.add(post);
+                STORAGE.add(post);
                 System.out.println("Post was added.");
             }
         } catch (ModelExistingException e) {
